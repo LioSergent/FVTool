@@ -1,6 +1,5 @@
 classdef CellVariable
     %CellVariable class 
-    % 
 
     properties
         domain
@@ -12,8 +11,6 @@ classdef CellVariable
         left
         right
     end
-
-
 
     methods
         function cv = CellVariable(meshVar, cellval)
