@@ -12,7 +12,7 @@ classdef CellVariableTest < matlab.unittest.TestCase
             L = 1;
             ms = createMesh1D(Nx, L);
             testCase.m = ms;
-            testCase.cvar = createCellVariable(ms, (1:4)');
+            testCase.cvar = CellVariable(ms, (1:4)');
         end
     end
 
@@ -23,22 +23,11 @@ classdef CellVariableTest < matlab.unittest.TestCase
     end
 
     methods(Test)
-        function test_ival(testCase)
-            testCase.verifySame(testCase.cvar.ival(2), 2);
-            testCase.cvar.ival = (4:7)';
-            testCase.verifySame(testCase.cvar.ival(2), 5);
+        function test_value(testCase)
+            testCase.verifySame(testCase.cvar.value(2), 2);
+            testCase.cvar.value = (4:7)';
+            testCase.verifySame(testCase.cvar.value(2), 5);
         end
-
-        function test_applyBC(testCase)
-            BC = createBC(testCase.m);
-            BC.left = robin(1, 0, 1);
-            BC.right = robin(0, 1, 1);
-            testCase.cvar = applyBC(testCase.cvar, BC);
-            grad = gradientTerm(testCase.cvar); 
-            testCase.verifySame(grad.xvalue(1), 1);
-            testCase.verifySame(testCase.cvar.right, 1);
-        end
-
     end
 
 end

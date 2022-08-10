@@ -30,7 +30,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             end
             fields = string(sort(inner_table.Properties.VariableNames))';
             ct.mesh = mesh;
-            Nxs = ct.mesh.dims(1) + 2;
+            Nxs = ct.mesh.dims(1);
             ct.A = zeros(1, numel(fields), Nxs); 
             ct.field_struct = struct();
 
@@ -63,7 +63,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             old_field_struct = self.field_struct;
             new_fields = sort([self.fields; name]);
             self.field_struct = struct();
-            Nxs = self.mesh.dims(1) + 2;
+            Nxs = self.mesh.dims(1);
             self.A = zeros(1, numel(new_fields), Nxs); 
             for idx = 1:numel(new_fields)
                 field = new_fields(idx);
@@ -94,13 +94,13 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
         function res = sum(self)
             % Does horizontal sum
-            v = reshape(sum(self.A, 2), [self.mesh.dims(1)+2 1]);
-            res = createCellVariable(self.mesh, v(2:end-1));
+            v = reshape(sum(self.A, 2), [self.mesh.dims(1) 1]);
+            res = CellVariable(self.mesh, v);
         end
 
         function cv = get_cv(self, name)
             vec = reshape(self.A(1, self.field_struct.(name), :), [self.nxs 1]);
-            cv = createCellVariable(self.mesh, vec(2:end-1));
+            cv = CellVariable(self.mesh, vec);
         end
 
         function patch_cv(self, name, cv)
@@ -116,7 +116,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function n = get.nxs(self)
-            n = self.mesh.dims(1) + 2;
+            n = self.mesh.dims(1);
         end
 
         function n = get.nf(self)
@@ -155,13 +155,13 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
         function val = getDynamicProp(obj,name)
           idx = obj.field_struct.(name);
-          val = createCellVariable(obj.mesh, reshape(obj.A(1, idx, 2:end-1), [obj.mesh.dims(1) 1]));
+          val = CellVariable(obj.mesh, reshape(obj.A(1, idx, :), [obj.mesh.dims(1) 1]));
         end
 
         function setDynamicProp(obj,name,val)
             idx = obj.field_struct.(name);
             if class(val) == "CellVariable"
-                Nxs = val.domain.dims(1) + 2;
+                Nxs = val.domain.dims(1);
                 obj.A(1,idx,:) = reshape(val.value, [1 1 Nxs]);
             else 
                 Nxs = numel(val);
@@ -172,7 +172,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         function ct = from_calculable_struct(mesh, cs)
             ct = CellTable(mesh);
                 for idx = 1:numel(cs.fields) 
-                    ct.add_field(cs.fields(idx), createCellVariable(mesh, cs.V(idx)));
+                    ct.add_field(cs.fields(idx), CellVariable(mesh, cs.V(idx)));
                 end
         end
 

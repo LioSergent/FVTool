@@ -15,8 +15,8 @@ classdef CellTableTest < matlab.unittest.TestCase
             testCase.m = ms;
             testCase.x_O2_air = 0.2095;
             testCase.x_N2_air = 0.7808;
-            O2 = createCellVariable(ms, testCase.x_O2_air);
-            N2 = createCellVariable(ms, testCase.x_N2_air);
+            O2 = CellVariable(ms, testCase.x_O2_air);
+            N2 = CellVariable(ms, testCase.x_N2_air);
             testCase.x = CellTable(ms, table(O2, N2));
             testCase.x.equip_prop();
         end
@@ -30,7 +30,7 @@ classdef CellTableTest < matlab.unittest.TestCase
 
     methods(Test)
         function test_construction(testCase)
-            arr = zeros(1, 2, 5);
+            arr = zeros(1, 2, 3);
             arr(1,1,:) = testCase.x_N2_air;
             arr(1,2,:) = testCase.x_O2_air;
             testCase.verifyEqual(testCase.x.A, arr);
@@ -51,13 +51,13 @@ classdef CellTableTest < matlab.unittest.TestCase
         end
 
         function test_patch_cv(testCase)
-            cv_O2 = createCellVariable(testCase.m, 1);
+            cv_O2 = CellVariable(testCase.m, 1);
             testCase.x.patch_cv("O2", cv_O2);
             testCase.verifySame(testCase.x.O2.value(2), 1);
         end
         
         function test_add_field(testCase)
-            testCase.x.add_field("AA", createCellVariable(testCase.m, 1));
+            testCase.x.add_field("AA", CellVariable(testCase.m, 1));
             testCase.x.equip_prop()
             testCase.verifySame(testCase.x.AA.value(2), 1);
 
@@ -92,10 +92,10 @@ classdef CellTableTest < matlab.unittest.TestCase
             res.equip_prop();
             testCase.verifySame(res.O2.value(1), 2*testCase.x_O2_air);
 
-            cell_var = createCellVariable(testCase.m, (1:3)');
+            cell_var = CellVariable(testCase.m, (1:3)');
             res = testCase.x + cell_var;
             res.equip_prop();
-            testCase.verifySame(res.O2.value(1 + 2), testCase.x_O2_air + 2);
+            testCase.verifySame(res.O2.value(1 + 2), testCase.x_O2_air + 3);
 
             cs = CalculableStruct(struct("O2", 1, "N2", 1));
             res = testCase.x + cs;

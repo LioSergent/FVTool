@@ -44,7 +44,7 @@ if nargin==2
   Width=varargin{2};
   % cell size is dx
   dx = Width/Nx;
-  CellSize.x= dx*ones(Nx+2,1);
+  CellSize.x= dx*ones(Nx,1);
   CellSize.y= [0.0];
   CellSize.z= [0.0];
   CellLocation.x= [1:Nx]'*dx-dx/2;

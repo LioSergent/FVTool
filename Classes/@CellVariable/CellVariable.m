@@ -6,38 +6,18 @@ classdef CellVariable
         value
     end
 
-    properties (Dependent)
-        ival
-        left
-        right
-    end
-
     methods
         function cv = CellVariable(meshVar, cellval)
             if nargin>0
                 cv.domain = meshVar;
-                cv.value = cellval; % does not do any dim check!
+                if size(cellval) == meshVar.dims
+                    cv.value = cellval;
+                elseif isscalar(cellval)
+                    cv.value = cellval .* ones(meshVar.dims);
+                else 
+                    error("Wrong value for CellVariable");
+                end
             end
-        end
-
-        function r = get.ival(self)
-            % Inner value
-            r = self.value(2:end-1);
-        end
-
-        function self = set.ival(self,val)
-            % Inner value
-            self.value(2:end-1) = val;
-        end
-
-        function r = get.left(self)
-            % Value at left boundary
-            r = (self.value(1) + self.value(2))/2;
-        end
-
-        function r = get.right(self)
-            % Value at left boundary
-            r = (self.value(end) + self.value(end-1))/2;
         end
     end
 end

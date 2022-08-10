@@ -87,7 +87,7 @@ classdef CalculableStructTest < matlab.unittest.TestCase
             res.equip_prop();
             testCase.verifySame(res.O2, 4 * testCase.x_O2_air);
 
-            cv = createCellVariable(testCase.mesh, 3);
+            cv = CellVariable(testCase.mesh, 3);
             res = cv .* testCase.x;
             res.equip_prop();
             testCase.verifySame(res.O2.value(3), 3 * testCase.x_O2_air);
@@ -103,12 +103,12 @@ classdef CalculableStructTest < matlab.unittest.TestCase
             res.equip_prop();
             testCase.verifySame(res.O2, 1 / testCase.x.O2);
 
-            cv = createCellVariable(testCase.mesh, 2);
+            cv = CellVariable(testCase.mesh, 2);
             res = cv ./ testCase.x;
             res.equip_prop();
             testCase.verifySame(res.O2.value(2), 2 / testCase.x.O2);
 
-            cv = createCellVariable(testCase.mesh, 2);
+            cv = CellVariable(testCase.mesh, 2);
             res = testCase.x ./ cv;
             res.equip_prop();
             testCase.verifySame(res.O2.value(2), testCase.x.O2 / 2);

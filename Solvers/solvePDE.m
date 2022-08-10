@@ -27,7 +27,7 @@ arguments
     MS MeshStructure
     M double
     RHS double
-    guess CellVariable = createCellVariable(MS, 1)
+    guess CellVariable = CellVariable(MS, ones(MS.dims))
     solver_opts LSolverOpts = LSolverOpts()
 end
 
@@ -45,15 +45,17 @@ switch solver_opts.solver_name
         x = M\RHS;
 end
 
-n = MS.dimension;
-N = MS.dims;
+phi = CellVariable(MS, x);
 
-if (n>=2)
-    phival = reshape(x, N+2);
-else
-    phival = reshape(x, [N(1)+2 1]);
-end
+% n = MS.dimension;
+% N = MS.dims;
 
-phi=CellVariable(MS, phival);
+% if (n>=2)
+%     phival = reshape(x, N+2);
+% else
+%     phival = reshape(x, [N(1)+2 1]);
+% end
+
+% phi=CellVariable(MS, phival);
 
 end
