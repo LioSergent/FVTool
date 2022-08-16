@@ -18,6 +18,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
     properties (Dependent)
         fields
         nxs
+        nx
         nf
         T
     end
@@ -108,6 +109,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function patch_vec(self, name, vec)
+            % Patches the values for one specific attribute
             self.A(1, self.field_struct.(name), :) = reshape(vec, [1 1 self.nxs]);
         end
 
@@ -119,12 +121,22 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             n = self.mesh.dims(1) + 2;
         end
 
+        function n = get.nx(self)
+            n = self.mesh.dims(1);
+        end
+
         function n = get.nf(self)
             n = numel(self.fields);
         end
 
         function new_obj = copy(obj)
             new_obj = CellTable.from_array(obj.mesh, obj.A, obj.field_struct);
+        end
+
+        function col = to_col(self)
+            % Flattens into one long column, only the inner values
+            ivalA = permute(self.A, [3 2 1]);
+            col = reshape(ivalA(2:end-1, :, 1), [self.nx * self.nf 1]);
         end
 
     end
@@ -135,6 +147,19 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             ct = CellTable(mesh);
             ct.A = arr;
             ct.field_struct = field_struct;
+            if isscalar(arr)
+                ct.A = arr * ones([1 numel(fieldnames(field_struct)) mesh.dims(1) + 2]);
+            end
+        end
+
+        function ct = from_col(mesh, col, field_struct, BC)
+            ct = CellTable.from_array(mesh, 0, field_struct);
+            for idx = 1:numel(ct.fields)
+                field = ct.fields(idx);
+                loc_BC = BC.(field);
+                vals = col(1 + (idx - 1) * ct.nx: idx * ct.nx);
+                ct.patch_cv(field, createCellVariable(mesh, vals, loc_BC));
+            end
         end
 
         function f = safe_fields(p)

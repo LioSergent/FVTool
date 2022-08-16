@@ -230,6 +230,20 @@ classdef CellTableTest < matlab.unittest.TestCase
             testCase.verifyEqual(y.O2.value(2), 0.23, 'RelTol', 1e-2);
         end
 
+        function test_to_col(testCase)
+            col = testCase.x.to_col();
+            expected = [ones(3,1) * testCase.x_N2_air; ones(3, 1) * testCase.x_O2_air];
+            testCase.verifySame(col, expected);
+        end
+
+        function test_from_col(testCase)
+            col = testCase.x.to_col();
+            BC = struct();
+            BC.O2 = createBC(testCase.m);
+            BC.N2 = createBC(testCase.m);
+            new_ct = CellTable.from_col(testCase.m, col, testCase.x.field_struct, BC);
+            testCase.verifySame(new_ct.get_cv("O2").value, testCase.x.O2.value);
+        end
     end
 
 end
