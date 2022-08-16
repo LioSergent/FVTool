@@ -20,6 +20,10 @@ classdef CellVariable
             end
         end
 
+        function self = apply_BC(self, BC)
+            self.value = cellBoundary(self.ival, BC);
+        end
+
         function r = get.ival(self)
             % Inner value
             r = self.value(2:end-1);
