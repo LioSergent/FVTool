@@ -108,6 +108,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function patch_vec(self, name, vec)
+            % Patches the values for one specific attribute
             self.A(1, self.field_struct.(name), :) = reshape(vec, [1 1 self.nxs]);
         end
 
@@ -127,6 +128,11 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             new_obj = CellTable.from_array(obj.mesh, obj.A, obj.field_struct);
         end
 
+        function col = to_col(self)
+            % Flattens into one long column, only the inner values
+            col = reshape(self.A(1, :, 2:end-1), [self.nxs 1]);
+        end
+
     end
 
     methods (Static)
@@ -135,6 +141,9 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             ct = CellTable(mesh);
             ct.A = arr;
             ct.field_struct = field_struct;
+            if isscalar(arr)
+                ct.A = arr * ones([1 numel(fieldnames(field_struct)) mesh.dims(1) + 2]);
+            end
         end
 
         function f = safe_fields(p)
