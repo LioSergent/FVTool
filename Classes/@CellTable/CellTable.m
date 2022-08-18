@@ -113,6 +113,11 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             self.A(1, self.field_struct.(name), :) = reshape(vec, [1 1 self.nxs]);
         end
 
+        function patch_ivec(self, name, vec)
+            % Patches the values for one specific attribute
+            self.A(1, self.field_struct.(name), 2:end-1) = reshape(vec, [1 1 self.nx]);
+        end
+
         function patch_ct(self, ct)
             self.A = ct.A;
         end
