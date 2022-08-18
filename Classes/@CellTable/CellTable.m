@@ -89,6 +89,14 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             end
         end
 
+        function new_struct = ival_struct(self)
+            new_struct = struct();
+            for idx = 1:self.nf
+                field = self.fields(idx);
+                new_struct.(field) = reshape(self.A(1, idx, 2:end-1), [self.nx 1]);
+            end
+        end
+
         function repr(self)
             disp(self.T);
         end
