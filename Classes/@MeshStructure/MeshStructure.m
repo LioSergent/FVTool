@@ -35,7 +35,7 @@ classdef MeshStructure
             idx = 1;
             while path < x
                 % Errors if x is too big
-                path = path + self.cellsize(idx);
+                path = path + self.cellsize.x(idx);
                 idx = idx + 1;
             end
             n_cell = idx - 1;
