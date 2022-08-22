@@ -146,10 +146,15 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             new_obj = CellTable.from_array(obj.mesh, obj.A, obj.field_struct);
         end
 
-        function col = to_col(self)
+        function col = to_col_by_var(self)
             % Flattens into one long column, only the inner values
-            ivalA = permute(self.A, [3 2 1]);
-            col = reshape(ivalA(2:end-1, :, 1), [self.nx * self.nf 1]);
+            ivalA = permute(self.A(:,:, 2:end-1), [3 2 1]);
+            col = reshape(ivalA, [self.nx * self.nf 1]);
+        end
+
+        function col = to_col_by_cell(self)
+            ivalA = permute(self.A(:,:,2:end-1), [2 3 1]);
+            col = reshape(ivalA, [self.nx * self.nf 1]);
         end
 
     end
@@ -165,12 +170,22 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             end
         end
 
-        function ct = from_col(mesh, col, field_struct, BC)
+        function ct = from_col_by_var(mesh, col, field_struct, BC)
             ct = CellTable.from_array(mesh, 0, field_struct);
             for idx = 1:numel(ct.fields)
                 field = ct.fields(idx);
                 loc_BC = BC.(field);
                 vals = col(1 + (idx - 1) * ct.nx: idx * ct.nx);
+                ct.patch_cv(field, createCellVariable(mesh, vals, loc_BC));
+            end
+        end
+
+        function ct = from_col_by_cell(mesh, col, field_struct, BC)
+            ct = CellTable.from_array(mesh, 0, field_struct);
+            for idx = 1:numel(ct.fields)
+                field = ct.fields(idx);
+                loc_BC = BC.(field);
+                vals = col(idx:ct.nf:end);
                 ct.patch_cv(field, createCellVariable(mesh, vals, loc_BC));
             end
         end
