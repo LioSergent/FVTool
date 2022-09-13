@@ -41,4 +41,11 @@ classdef MeshStructure
             n_cell = idx - 1;
         end
     end
+
+    methods (Static)
+        function m = fromCellSizes(cell_sizes)
+            cell_faces = [0; cumsum(cell_sizes(:))];
+            m = createMesh1D(cell_faces);
+        end
+    end
 end
