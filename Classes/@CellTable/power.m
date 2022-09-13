@@ -1,3 +1,3 @@
 function ct = power(p,q)
-    ct = CellTable.from_array(p.mesh, p.A.^q, p.field_struct);
+    ct = CellTable.from_array(p.domain, p.A.^q, p.field_struct);
 end

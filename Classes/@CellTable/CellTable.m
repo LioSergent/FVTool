@@ -12,7 +12,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
     properties
         A  % inner array
         field_struct  % ordered list
-        mesh % mesh of the CellVariables
+        domain % mesh of the CellVariables
     end
 
     properties (Dependent)
@@ -24,14 +24,14 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
     end
 
     methods
-        function ct = CellTable(mesh, inner_table)
+        function ct = CellTable(domain, inner_table)
             arguments
-                mesh MeshStructure
+                domain MeshStructure
                 inner_table table = table()
             end
             fields = string(sort(inner_table.Properties.VariableNames))';
-            ct.mesh = mesh;
-            Nxs = ct.mesh.dims(1) + 2;
+            ct.domain = domain;
+            Nxs = ct.domain.dims(1) + 2;
             ct.A = zeros(1, numel(fields), Nxs); 
             ct.field_struct = struct();
 
@@ -64,7 +64,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             old_field_struct = self.field_struct;
             new_fields = sort([self.fields; name]);
             self.field_struct = struct();
-            Nxs = self.mesh.dims(1) + 2;
+            Nxs = self.domain.dims(1) + 2;
             self.A = zeros(1, numel(new_fields), Nxs); 
             for idx = 1:numel(new_fields)
                 field = new_fields(idx);
@@ -103,13 +103,13 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
         function res = sum(self)
             % Does horizontal sum
-            v = reshape(sum(self.A, 2), [self.mesh.dims(1)+2 1]);
-            res = createCellVariable(self.mesh, v(2:end-1));
+            v = reshape(sum(self.A, 2), [self.domain.dims(1)+2 1]);
+            res = createCellVariable(self.domain, v(2:end-1));
         end
 
         function cv = get_cv(self, name)
             vec = reshape(self.A(1, self.field_struct.(name), :), [self.nxs 1]);
-            cv = createCellVariable(self.mesh, vec(2:end-1));
+            cv = createCellVariable(self.domain, vec(2:end-1));
         end
 
         function patch_cv(self, name, cv)
@@ -131,11 +131,11 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function n = get.nxs(self)
-            n = self.mesh.dims(1) + 2;
+            n = self.domain.dims(1) + 2;
         end
 
         function n = get.nx(self)
-            n = self.mesh.dims(1);
+            n = self.domain.dims(1);
         end
 
         function n = get.nf(self)
@@ -143,7 +143,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function new_obj = copy(obj)
-            new_obj = CellTable.from_array(obj.mesh, obj.A, obj.field_struct);
+            new_obj = CellTable.from_array(obj.domain, obj.A, obj.field_struct);
         end
 
         function col = to_col_by_var(self)
@@ -157,36 +157,40 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             col = reshape(ivalA, [self.nx * self.nf 1]);
         end
 
+        function normalize(self)
+            self.A = self.A ./ sum(self.A, 2);
+        end
+
     end
 
     methods (Static)
 
-        function ct = from_array(mesh, arr, field_struct)
-            ct = CellTable(mesh);
+        function ct = from_array(domain, arr, field_struct)
+            ct = CellTable(domain);
             ct.A = arr;
             ct.field_struct = field_struct;
             if isscalar(arr)
-                ct.A = arr * ones([1 numel(fieldnames(field_struct)) mesh.dims(1) + 2]);
+                ct.A = arr * ones([1 numel(fieldnames(field_struct)) domain.dims(1) + 2]);
             end
         end
 
-        function ct = from_col_by_var(mesh, col, field_struct, BC)
-            ct = CellTable.from_array(mesh, 0, field_struct);
+        function ct = from_col_by_var(domain, col, field_struct, BC)
+            ct = CellTable.from_array(domain, 0, field_struct);
             for idx = 1:numel(ct.fields)
                 field = ct.fields(idx);
                 loc_BC = BC.(field);
                 vals = col(1 + (idx - 1) * ct.nx: idx * ct.nx);
-                ct.patch_cv(field, createCellVariable(mesh, vals, loc_BC));
+                ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
             end
         end
 
-        function ct = from_col_by_cell(mesh, col, field_struct, BC)
-            ct = CellTable.from_array(mesh, 0, field_struct);
+        function ct = from_col_by_cell(domain, col, field_struct, BC)
+            ct = CellTable.from_array(domain, 0, field_struct);
             for idx = 1:numel(ct.fields)
                 field = ct.fields(idx);
                 loc_BC = BC.(field);
                 vals = col(idx:ct.nf:end);
-                ct.patch_cv(field, createCellVariable(mesh, vals, loc_BC));
+                ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
             end
         end
 
@@ -208,7 +212,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
         function val = getDynamicProp(obj,name)
           idx = obj.field_struct.(name);
-          val = createCellVariable(obj.mesh, reshape(obj.A(1, idx, 2:end-1), [obj.mesh.dims(1) 1]));
+          val = createCellVariable(obj.domain, reshape(obj.A(1, idx, 2:end-1), [obj.domain.dims(1) 1]));
         end
 
         function setDynamicProp(obj,name,val)
@@ -222,10 +226,10 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             end
         end
 
-        function ct = from_calculable_struct(mesh, cs)
-            ct = CellTable(mesh);
+        function ct = from_calculable_struct(domain, cs)
+            ct = CellTable(domain);
                 for idx = 1:numel(cs.fields) 
-                    ct.add_field(cs.fields(idx), createCellVariable(mesh, cs.V(idx)));
+                    ct.add_field(cs.fields(idx), createCellVariable(domain, cs.V(idx)));
                 end
         end
 

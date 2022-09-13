@@ -1,4 +1,4 @@
 function r = uminus(p)
-    r = CellTable.from_array(p.mesh, -p.A, p.field_struct);
+    r = CellTable.from_array(p.domain, -p.A, p.field_struct);
 end
     
