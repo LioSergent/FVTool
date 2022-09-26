@@ -3,11 +3,12 @@ classdef CellVariable
 
     properties
         domain
-        value
+        value % Inner values + ghost cells
     end
 
     properties (Dependent)
-        ival
+        ival % Inner values (just the cells)
+        fval % Inner values + left and right
         left
         right
     end
@@ -32,6 +33,10 @@ classdef CellVariable
         function self = set.ival(self,val)
             % Inner value
             self.value(2:end-1) = val;
+        end
+
+        function r = get.fval(self)
+            r = [self.left; self.ival; self.right];
         end
 
         function r = get.left(self)
