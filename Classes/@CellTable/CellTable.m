@@ -21,6 +21,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         nx
         nf
         T
+        fA
     end
 
     methods
@@ -152,9 +153,19 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             col = reshape(ivalA, [self.nx * self.nf 1]);
         end
 
+        function newA = get.fA(self)
+            % returns a multidimensional array with the inner values and the values at the
+            % boundaries
+            B = zeros(size(self.A));
+            B(:,:,2:end-1) = self.A(:,:,2:end-1);
+            B(:,:,1) = self.A(:,:,2);
+            B(:,:,end) = self.A(:,:,end-1);
+            newA = (self.A + B)/2;
+        end
+
         function col = to_col_by_cell(self)
-            ivalA = permute(self.A(:,:,2:end-1), [2 3 1]);
-            col = reshape(ivalA, [self.nx * self.nf 1]);
+            fvalA = permute(self.fA, [2 3 1]);
+            col = reshape(fvalA, [self.nxs * self.nf 1]);
         end
 
         function normalize(self)
