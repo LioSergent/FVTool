@@ -40,6 +40,13 @@ classdef MeshStructure
             end
             n_cell = idx - 1;
         end
+
+        function xs = fcellcenters(self)
+            % Returns the x positions corresponding to fval
+            cellsizes = self.cellsize.x;
+            xs = [0; self.cellcenters.x; sum(cellsizes(2:end-1))];
+        end
+
     end
 
     methods (Static)
