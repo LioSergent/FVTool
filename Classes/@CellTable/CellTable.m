@@ -185,24 +185,31 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             end
         end
 
-        function ct = from_col_by_var(domain, col, field_struct, BC)
-            ct = CellTable.from_array(domain, 0, field_struct);
-            for idx = 1:numel(ct.fields)
-                field = ct.fields(idx);
-                loc_BC = BC.(field);
-                vals = col(1 + (idx - 1) * ct.nx: idx * ct.nx);
-                ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
-            end
-        end
+        % function ct = from_col_by_var(domain, col, field_struct, BC)
+        %     ct = CellTable.from_array(domain, 0, field_struct);
+        %     for idx = 1:numel(ct.fields)
+        %         field = ct.fields(idx);
+        %         loc_BC = BC.(field);
+        %         vals = col(1 + (idx - 1) * ct.nx: idx * ct.nx);
+        %         ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
+        %     end
+        % end
 
-        function ct = from_col_by_cell(domain, col, field_struct, BC)
-            ct = CellTable.from_array(domain, 0, field_struct);
-            for idx = 1:numel(ct.fields)
-                field = ct.fields(idx);
-                loc_BC = BC.(field);
-                vals = col(idx:ct.nf:end);
-                ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
-            end
+        function ct = from_col_by_cell(domain, col, field_struct)
+            nv = numel(fieldnames(field_struct));
+            nxs = numel(col) / nv;
+            A_fval = reshape(col', [1 nv nxs]);
+            A = A_fval;
+            A(:,:,1) = 2*A_fval(:,:,1) - A_fval(:,:,2);
+            A(:,:,end) = 2*A_fval(:,:,end) - A_fval(:,:,end-1);
+            ct = CellTable.from_array(domain, A, field_struct);
+            % ct = CellTable.from_array(domain, 0, field_struct);
+            % for idx = 1:numel(ct.fields)
+            %     field = ct.fields(idx);
+            %     loc_BC = BC.(field);
+            %     vals = col(idx:ct.nf:end);
+            %     ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
+            % end
         end
 
         function f = safe_fields(p)

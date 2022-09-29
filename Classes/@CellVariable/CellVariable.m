@@ -49,4 +49,13 @@ classdef CellVariable
             r = (self.value(end) + self.value(end-1))/2;
         end
     end
+
+    methods (Static)
+        function cv = fromFval(domain, fval)
+            left_ghost = 2 * fval(1) - fval(2); 
+            right_ghost = 2 * fval(end) - fval(end-1);
+            cv = CellVariable(domain, [left_ghost; fval(2:end-1); right_ghost]);
+        end
+    end
+
 end
