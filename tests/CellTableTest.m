@@ -17,7 +17,7 @@ classdef CellTableTest < matlab.unittest.TestCase
             testCase.x_N2_air = 0.7808;
             O2 = createCellVariable(ms, testCase.x_O2_air);
             N2 = createCellVariable(ms, testCase.x_N2_air);
-            testCase.x = CellTable(ms, table(O2, N2));
+            testCase.x = CellTable.from_table(ms, table(O2, N2));
             testCase.x.equip_prop();
         end
     end
@@ -67,7 +67,7 @@ classdef CellTableTest < matlab.unittest.TestCase
         end
 
         function from_array(testCase)
-            ct = CellTable.from_array(testCase.x.mesh, testCase.x.A, testCase.x.field_struct);
+            ct = CellTable.from_array(testCase.x.domain, testCase.x.A, testCase.x.field_struct);
             ct.equip_prop();
             testCase.verifySame(testCase.x.O2.value(2), testCase.x_O2_air);
         end
@@ -230,18 +230,15 @@ classdef CellTableTest < matlab.unittest.TestCase
             testCase.verifyEqual(y.O2.value(2), 0.23, 'RelTol', 1e-2);
         end
 
-        function test_to_col(testCase)
-            col = testCase.x.to_col();
-            expected = [ones(3,1) * testCase.x_N2_air; ones(3, 1) * testCase.x_O2_air];
+        function test_to_col_by_cell(testCase)
+            col = testCase.x.to_col_by_cell();
+            expected = repmat([testCase.x_N2_air; testCase.x_O2_air], 5, 1);
             testCase.verifySame(col, expected);
         end
 
-        function test_from_col(testCase)
-            col = testCase.x.to_col();
-            BC = struct();
-            BC.O2 = createBC(testCase.m);
-            BC.N2 = createBC(testCase.m);
-            new_ct = CellTable.from_col(testCase.m, col, testCase.x.field_struct, BC);
+        function test_from_col_by_cell(testCase)
+            col = testCase.x.to_col_by_cell();
+            new_ct = CellTable.from_col_by_cell(testCase.m, col, testCase.x.field_struct);
             testCase.verifySame(new_ct.get_cv("O2").value, testCase.x.O2.value);
         end
     end

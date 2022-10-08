@@ -3,7 +3,8 @@ addpath(genpath("."));
 rehash
 rehash toolboxreset
 % runtests tests/
-runtests("CellTableTest","ProcedureName",["test_from_col"])
+runtests("CellTableTest")
+% runtests("CellTableTest","ProcedureName",["test_from_col_by_cell"])
 
 %% Run specific tests
 % runtests("CalculableStructTest","ProcedureName", ["test_properties", "test_fields",...
