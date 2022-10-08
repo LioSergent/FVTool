@@ -25,23 +25,10 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
     end
 
     methods
-        function ct = CellTable(domain, inner_table)
-            arguments
-                domain MeshStructure
-                inner_table table = table()
-            end
-            fields = string(sort(inner_table.Properties.VariableNames))';
+        function ct = CellTable(domain, A, field_struct)
             ct.domain = domain;
-            Nxs = ct.domain.dims(1) + 2;
-            ct.A = zeros(1, numel(fields), Nxs); 
-            ct.field_struct = struct();
-
-            for idx = 1:numel(fields)
-                field = fields(idx);
-                ct.field_struct.(field) = idx;
-                ct.A(1, idx, :) = reshape(inner_table.(field).value, [1 1 Nxs]); 
-            end
-
+            ct.A = A;
+            ct.field_struct = field_struct;
         end
 
         function add_prop(self, name)
@@ -176,40 +163,42 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
     methods (Static)
 
+        function ct = from_table(domain, inner_table)
+            arguments
+                domain MeshStructure
+                inner_table table = table()
+            end
+            fields = string(sort(inner_table.Properties.VariableNames))';
+            Nxs = domain.dims(1) + 2;
+            A = zeros(1, numel(fields), Nxs); 
+            field_struct = struct();
+
+            for idx = 1:numel(fields)
+                field = fields(idx);
+                field_struct.(field) = idx;
+                A(1, idx, :) = reshape(inner_table.(field).value, [1 1 Nxs]); 
+            end
+
+            ct = CellTable(domain, A, field_struct);
+
+        end
         function ct = from_array(domain, arr, field_struct)
-            ct = CellTable(domain);
-            ct.A = arr;
-            ct.field_struct = field_struct;
+            % For backwards compatibility
+            ct = CellTable(domain, arr, field_struct);
             if isscalar(arr)
                 ct.A = arr * ones([1 numel(fieldnames(field_struct)) domain.dims(1) + 2]);
             end
         end
-
-        % function ct = from_col_by_var(domain, col, field_struct, BC)
-        %     ct = CellTable.from_array(domain, 0, field_struct);
-        %     for idx = 1:numel(ct.fields)
-        %         field = ct.fields(idx);
-        %         loc_BC = BC.(field);
-        %         vals = col(1 + (idx - 1) * ct.nx: idx * ct.nx);
-        %         ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
-        %     end
-        % end
 
         function ct = from_col_by_cell(domain, col, field_struct)
             nv = numel(fieldnames(field_struct));
             nxs = numel(col) / nv;
             A_fval = reshape(col', [1 nv nxs]);
             A = A_fval;
+            % The column has the left and right values, we need the ghost cells values here
             A(:,:,1) = 2*A_fval(:,:,1) - A_fval(:,:,2);
             A(:,:,end) = 2*A_fval(:,:,end) - A_fval(:,:,end-1);
             ct = CellTable.from_array(domain, A, field_struct);
-            % ct = CellTable.from_array(domain, 0, field_struct);
-            % for idx = 1:numel(ct.fields)
-            %     field = ct.fields(idx);
-            %     loc_BC = BC.(field);
-            %     vals = col(idx:ct.nf:end);
-            %     ct.patch_cv(field, createCellVariable(domain, vals, loc_BC));
-            % end
         end
 
         function f = safe_fields(p)
@@ -245,10 +234,14 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function ct = from_calculable_struct(domain, cs)
-            ct = CellTable(domain);
-                for idx = 1:numel(cs.fields) 
-                    ct.add_field(cs.fields(idx), createCellVariable(domain, cs.V(idx)));
-                end
+            nv = numel(cs.fields);
+            nxs = domain.dims(1) + 2;
+            A = ones(1, nv, nxs);
+            for idx = 1:numel(cs.fields) 
+                A(1, idx, :) = cs.V(idx);
+            end
+            ct = CellTable(domain, A, cs.field_struct);
+
         end
 
     end
