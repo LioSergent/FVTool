@@ -92,12 +92,12 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         function res = sum(self)
             % Does horizontal sum
             v = reshape(sum(self.A, 2), [self.domain.dims(1)+2 1]);
-            res = createCellVariable(self.domain, v(2:end-1));
+            res = CellVariable(self.domain, v);
         end
 
         function cv = get_cv(self, name)
             vec = reshape(self.A(1, self.field_struct.(name), :), [self.nxs 1]);
-            cv = createCellVariable(self.domain, vec(2:end-1));
+            cv = CellVariable(self.domain, vec);
         end
 
         function patch_cv(self, name, cv)
