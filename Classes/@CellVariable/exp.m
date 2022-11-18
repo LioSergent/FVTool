@@ -1,4 +1,6 @@
 function r = exp(p)
     r = p;
-    r.value = exp(p.value);
+    r.ival = exp(p.ival);
+    r.left = exp(p.left);
+    r.right = exp(p.right);
 end

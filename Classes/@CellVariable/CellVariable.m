@@ -48,6 +48,15 @@ classdef CellVariable
             % Value at left boundary
             r = (self.value(end) + self.value(end-1))/2;
         end
+
+        function self = set.left(self, val)
+            self.value(1) = 2*val - self.value(2);
+        end
+
+        function self = set.right(self, val)
+            self.value(end) = 2*val - self.value(end-1);
+        end
+
     end
 
     methods (Static)

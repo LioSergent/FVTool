@@ -21,7 +21,9 @@ function r = rdivide(p,q)
 
 if (isa(p, 'CellVariable')&&isa(q, 'CellVariable'))
     r=p;
-    r.value = p.value./q.value;
+    r.ival = p.ival ./ q.ival;
+    r.left = p.left ./ q.left;
+    r.right = p.right ./ q.right;
 elseif isa(p, 'CellVariable')
     r=p;
     r.value = p.value./q;
