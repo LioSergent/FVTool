@@ -9,7 +9,7 @@ function r = times(p,q)
         r = CellTable.from_array(q.domain, arr_from_cs .* arr_from_cv, p.field_struct);
     elseif isa(p, 'CellVariable')&&isa(q, 'CalculableStruct')
         r = q .* p;
-    elseif isa(p, 'CalculablStruct')
+    elseif isa(p, 'CalculableStruct')
         r = CalculableStruct.from_vec(p.V .* q, p.field_struct);
     else 
         r = CalculableStruct.from_vec(q.V .* p, q.field_struct);

@@ -22,6 +22,9 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         nf
         T
         fA
+        fT
+        left
+        right
     end
 
     methods
@@ -70,11 +73,39 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function tab = get.T(self)
+            % The array put into a table
             tab = table();
             for idx = 1:self.nf
                 field = self.fields(idx);
                 tab.(field) = reshape(self.A(1, idx, :), [self.nxs 1]);
             end
+        end
+
+        function tab = get.fT(self)
+            % The array put into a table, without ghost cells but with values at the boundary
+            tab = table();
+            for idx = 1:self.nf
+                field = self.fields(idx);
+                tab.(field) = reshape(self.fA(1, idx, :), [self.nxs 1]);
+            end
+        end
+
+        function cs = get.left(self)
+            cs = CalculableStruct.from_vec(reshape(self.A(1,:,1)/2 + self.A(1,:,2)/2, [self.nf 1]),...
+                self.field_struct);
+        end
+
+        function cs = get.right(self)
+            cs = CalculableStruct.from_vec(...
+                reshape(self.A(1,:,end)/2 + self.A(1,:,end-1)/2, [self.nf, 1]), self.field_struct);
+        end
+
+        function set.left(self, cs)
+            self.A(1,:,1) = 2 * cs.V' - self.A(1,:,2);
+        end
+
+        function set.right(self, cs)
+            self.A(1,:,end) = 2 * cs.V' - self.A(1,:,end-1);
         end
 
         function new_struct = ival_struct(self)
@@ -85,8 +116,22 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             end
         end
 
+        function tab = tab_to_repr(self)
+            tab = self.fT;
+            row_labels = strings(self.nxs, 1);
+            cell_positions = self.domain.fcellcenters();
+            row_labels(1) = sprintf("L %0.3g", cell_positions(1));
+            for idx = 2:numel(row_labels)-1
+                cell_number = idx - 1;
+                cell_position = cell_positions(idx);
+                row_labels(idx) = sprintf("C%d %0.3g", cell_number, cell_position);
+            end
+            row_labels(end) = sprintf("R %0.3g", cell_positions(end));
+            tab.Properties.RowNames = row_labels;
+        end
+
         function repr(self)
-            disp(self.T);
+            disp(self.tab_to_repr());
         end
 
         function res = sum(self)
