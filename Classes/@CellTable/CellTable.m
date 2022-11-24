@@ -196,13 +196,20 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             newA = (self.A + B)/2;
         end
 
+        function set.fA(self, arr)
+            self.A = arr;
+            % The column has the left and right values, we need the ghost cells values here
+            self.A(:,:,1) = 2*arr(:,:,1) - arr(:,:,2);
+            self.A(:,:,end) = 2*arr(:,:,end) - arr(:,:,end-1);
+        end
+
         function col = to_col_by_cell(self)
             fvalA = permute(self.fA, [2 3 1]);
             col = reshape(fvalA, [self.nxs * self.nf 1]);
         end
 
         function normalize(self)
-            self.A = self.A ./ sum(self.A, 2);
+            self.fA = self.fA ./ sum(self.fA, 2);
         end
 
     end

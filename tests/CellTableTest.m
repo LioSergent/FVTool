@@ -241,6 +241,12 @@ classdef CellTableTest < matlab.unittest.TestCase
             new_ct = CellTable.from_col_by_cell(testCase.m, col, testCase.x.field_struct);
             testCase.verifySame(new_ct.get_cv("O2").value, testCase.x.O2.value);
         end
+
+        function test_normalize(testCase)
+            testCase.x.normalize();
+            ct_sum = sum(testCase.x);
+            testCase.verifySame(ct_sum.value(2), 1);
+        end
     end
 
 end
