@@ -1,5 +1,3 @@
 function ct = power(p,q)
-    ct = CellTable.from_array(p.domain, p.A.^q, p.field_struct);
-    ct.left = p.left.^q;
-    ct.right = p.right.^q;
+    ct = CellTable.from_farray(p.domain, p.fA.^q, p.field_struct);
 end

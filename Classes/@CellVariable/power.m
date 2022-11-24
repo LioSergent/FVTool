@@ -27,7 +27,11 @@ if (isa(p, 'CellVariable')&&isa(q, 'CellVariable'))
 elseif isa(p, 'CellVariable')
     r=p;
     r.value = p.value.^q;
+    r.left = p.left^q;
+    r.right = p.right^q;
 else
     r=q;
     r.value = p.^q.value;
+    r.left = p.^q.left;
+    r.right = p.^q.right;
 end

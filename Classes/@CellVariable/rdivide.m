@@ -30,4 +30,6 @@ elseif isa(p, 'CellVariable')
 else
     r=q;
     r.value = p./q.value;
+    r.left = p./q.left;
+    r.right = p./q.right;
 end

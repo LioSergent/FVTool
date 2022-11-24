@@ -24,8 +24,8 @@ function r = rdivide(p,q)
         r.left = p ./ q.left;
         r.right = p ./ q.left;
     elseif isa(p, 'CellTable')
-        r = CellTable.from_array(p.domain, p.A ./ q, p.field_struct);
+        r = CellTable.from_farray(p.domain, p.fA ./ q, p.field_struct);
     else
-        r = CellTable.from_array(q.domain, p ./ q.A, q.field_struct);
+        r = CellTable.from_farray(q.domain, p ./ q.fA, q.field_struct);
     end
 end

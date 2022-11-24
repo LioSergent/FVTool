@@ -29,6 +29,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
     methods
         function ct = CellTable(domain, A, field_struct)
+            % Assumes first and last elements in 3rd dim are ghost cells
             ct.domain = domain;
             ct.A = A;
             ct.field_struct = field_struct;
@@ -235,15 +236,20 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             end
         end
 
+        function ct = from_farray(domain, arr, field_struct)
+            % Assumes first and last elements in 3rd dimension are boundary values
+            A = arr;
+            % The column has the left and right values, we need the ghost cells values here
+            A(:,:,1) = 2*arr(:,:,1) - arr(:,:,2);
+            A(:,:,end) = 2*arr(:,:,end) - arr(:,:,end-1);
+            ct = CellTable.from_array(domain, A, field_struct);
+        end
+
         function ct = from_col_by_cell(domain, col, field_struct)
             nv = numel(fieldnames(field_struct));
             nxs = numel(col) / nv;
             A_fval = reshape(col', [1 nv nxs]);
-            A = A_fval;
-            % The column has the left and right values, we need the ghost cells values here
-            A(:,:,1) = 2*A_fval(:,:,1) - A_fval(:,:,2);
-            A(:,:,end) = 2*A_fval(:,:,end) - A_fval(:,:,end-1);
-            ct = CellTable.from_array(domain, A, field_struct);
+            ct = CellTable.from_farray(domain, A_fval, field_struct);
         end
 
         function f = safe_fields(p)
