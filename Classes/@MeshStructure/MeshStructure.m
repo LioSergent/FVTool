@@ -38,7 +38,7 @@ classdef MeshStructure
                 path = path + self.cellsize.x(idx);
                 idx = idx + 1;
             end
-            n_cell = idx - 1;
+            n_cell = idx; 
         end
 
         function xs = fcellcenters(self)
@@ -49,7 +49,8 @@ classdef MeshStructure
 
         function n_cell = Z2n_cell(self, Z)
             L = sum(self.cellsize.x(2:end-1));
-            n_cell = find(self.cellcenters.x(2:end-1) > Z*L, 1);
+            % n_cell = find(self.cellcenters.x(2:end-1) > Z*L, 1);
+            n_cell = self.x2cell_number(L * Z);
         end
 
     end
