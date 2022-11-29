@@ -47,6 +47,11 @@ classdef MeshStructure
             xs = [0; self.cellcenters.x; sum(cellsizes(2:end-1))];
         end
 
+        function n_cell = Z2n_cell(self, Z)
+            L = sum(self.cellsize.x(2:end-1));
+            n_cell = find(self.cellcenters.x(2:end-1) > Z*L, 1);
+        end
+
     end
 
     methods (Static)
