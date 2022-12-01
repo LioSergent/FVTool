@@ -83,8 +83,12 @@ classdef (InferiorClasses = {?CellVariable}) CalculableStruct < dynamicprops
             end
         end
 
-        function str = repr(self)
-            str = disp(self.struct_repr);
+        function tab = tab_repr(self)
+            tab = struct2table(self.struct_repr);
+        end
+
+        function repr(self)
+            disp(self.tab_repr());
         end
 
         function res = sum(self)
