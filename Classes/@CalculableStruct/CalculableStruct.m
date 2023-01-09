@@ -98,6 +98,11 @@ classdef (InferiorClasses = {?CellVariable}) CalculableStruct < dynamicprops
         function new_obj = copy(self)
             new_obj = CalculableStruct.from_vec(self.V, self.field_struct);
         end
+
+        function val = get_val(self, var_name)
+            idx = self.field_struct.(var_name);
+            val = self.V(idx);
+        end
     end
 
     methods (Static)
