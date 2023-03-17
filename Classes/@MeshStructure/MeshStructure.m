@@ -47,6 +47,14 @@ classdef MeshStructure
             xs = [0; self.cellcenters.x; sum(cellsizes(2:end-1))];
         end
 
+
+        function xs = gcellcenters(self)
+            % Returns the x positions corresponding to value (ie with ghost cells)
+            x_gl = self.cellcenters.x(1) - self.cellsize.x(1);  % Position of left ghost cell
+            x_gr = self.cellcenters.x(end) + self.cellsize.x(end);
+            xs = [x_gl; self.cellcenters.x; x_gr];
+        end
+
         function n_cell = Z2n_cell(self, Z)
             L = sum(self.cellsize.x(2:end-1));
             % n_cell = find(self.cellcenters.x(2:end-1) > Z*L, 1);
