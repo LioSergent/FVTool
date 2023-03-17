@@ -37,7 +37,7 @@ switch solver_opts.solver_name
         x = M\RHS;
     case 'Gauss-Seidel'
         x = gauss_seidel(M, RHS, guess.value, solver_opts);
-    case 'minSquareCholesky'
+    case 'minsquarecholesky'
         x = minSquareCholesky(M, RHS);
     case 'tdma'
         x = tdma(M, RHS);
