@@ -22,6 +22,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         nf
         T
         fA
+        iA
         fT
         left
         right
@@ -141,6 +142,12 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             res = CellVariable(self.domain, v);
         end
 
+        function res = cell_sum(self)
+            % Sums on the cells
+            % Outputs a Calculable struct
+            res = CalculableStruct.from_vec(sum(self.iA, 3), self.field_struct);
+        end
+
         function cv = get_cv(self, name)
             vec = reshape(self.A(1, self.field_struct.(name), :), [self.nxs 1]);
             cv = CellVariable(self.domain, vec);
@@ -194,6 +201,11 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             B(:,:,1) = self.A(:,:,2);
             B(:,:,end) = self.A(:,:,end-1);
             newA = (self.A + B)/2;
+        end
+
+        function newA = get.iA(self)
+            % returns a multidimensional array with just the inner values             
+            newA = self.A(:,:,2:end-1);
         end
 
         function set.fA(self, arr)
