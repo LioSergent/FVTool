@@ -88,7 +88,9 @@ classdef (InferiorClasses = {?CellVariable}) CalculableStruct < dynamicprops
         end
 
         function repr(self)
-            disp(self.tab_repr());
+            tab = self.tab_repr();
+            tab.TOTAL = sum(self);
+            disp(tab);
         end
 
         function res = sum(self)
@@ -109,7 +111,7 @@ classdef (InferiorClasses = {?CellVariable}) CalculableStruct < dynamicprops
 
         function obj = from_vec(vec, field_s)
             obj = CalculableStruct();
-            obj.V = vec;
+            obj.V = vec(:);
             obj.field_struct = field_s;
         end
 
