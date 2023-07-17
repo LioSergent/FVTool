@@ -27,6 +27,7 @@ if (d ==1) || (d==1.5) || (d==1.8)
     dx = phi.domain.cellsize.x;
     xvalue=phi.value(1:end-1).*phi.value(2:end).*(dx(2:end)+dx(1:end-1))...
         ./(dx(2:end).*phi.value(1:end-1)+dx(1:end-1).*phi.value(2:end));
+    xvalue(isnan(xvalue)) = 0;
     yvalue=[];
     zvalue=[];
 elseif (d == 2) || (d == 2.5) || (d == 2.8)
