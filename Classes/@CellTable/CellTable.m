@@ -97,9 +97,19 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
                 self.field_struct);
         end
 
+        function cs = first_cell(self)
+            cs = CalculableStruct.from_vec(reshape(self.A(1,:,2), [self.nf 1]),...
+                self.field_struct);
+        end
+
         function cs = get.right(self)
             cs = CalculableStruct.from_vec(...
                 reshape(self.A(1,:,end)/2 + self.A(1,:,end-1)/2, [self.nf, 1]), self.field_struct);
+        end
+
+        function cs = last_cell(self)
+            cs = CalculableStruct.from_vec(reshape(self.A(1,:,end-1), [self.nf 1]),...
+                self.field_struct);
         end
 
         function set.left(self, cs)
@@ -146,6 +156,12 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             % Sums on the cells
             % Outputs a Calculable struct
             res = CalculableStruct.from_vec(sum(self.iA, 3), self.field_struct);
+        end
+
+        function res = icell_sum(self)
+            % Sums on the internal cells
+            % Outputs a Calculable struct
+            res = CalculableStruct.from_vec(sum(self.iA(:,:, 2:end-1), 3), self.field_struct);
         end
 
         function cv = get_cv(self, name)
