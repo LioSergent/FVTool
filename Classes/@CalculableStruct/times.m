@@ -1,6 +1,6 @@
 function r = times(p,q)
     if isa(p, 'CalculableStruct')&&isa(q, 'CalculableStruct')
-        r = CalculableStruct.from_vec(p.V .* q.V, p.field_struct);
+        r = CalculableStruct(p.V .* q.V, p.field_struct);
     elseif isa(p, 'CalculableStruct')&&isa(q, 'CellTable')
         r = q .* p;
     elseif isa(p, 'CalculableStruct')&&isa(q, 'CellVariable')
@@ -10,8 +10,8 @@ function r = times(p,q)
     elseif isa(p, 'CellVariable')&&isa(q, 'CalculableStruct')
         r = q .* p;
     elseif isa(p, 'CalculableStruct')
-        r = CalculableStruct.from_vec(p.V .* q, p.field_struct);
+        r = CalculableStruct(p.V .* q, p.field_struct);
     else 
-        r = CalculableStruct.from_vec(q.V .* p, q.field_struct);
+        r = CalculableStruct(q.V .* p, q.field_struct);
     end
 end

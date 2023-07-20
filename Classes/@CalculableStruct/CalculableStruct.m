@@ -20,18 +20,22 @@ classdef (InferiorClasses = {?CellVariable}) CalculableStruct < dynamicprops
     end
 
     methods
-        function cs = CalculableStruct(base_struct)
-            arguments
-                base_struct struct = struct()
-            end
-            base_struct = orderfields(base_struct);
-            fields = fieldnames(base_struct);
-            N = numel(fields);
-            cs.V = zeros(N, 1);
-            for idx = 1:numel(fields)
-                field = fields{idx};
-                cs.V(idx) = base_struct.(field);
-                cs.field_struct.(field) = idx;
+
+        function cs = CalculableStruct(vec_or_base_struct, field_s)
+            if nargin > 1
+                vec = vec_or_base_struct;
+                cs.V = vec(:);
+                cs.field_struct = field_s;
+            else
+                base_struct = orderfields(vec_or_base_struct);
+                fields = fieldnames(base_struct);
+                N = numel(fields);
+                cs.V = zeros(N, 1);
+                for idx = 1:numel(fields)
+                    field = fields{idx};
+                    cs.V(idx) = base_struct.(field);
+                    cs.field_struct.(field) = idx;
+                end
             end
         end
 
@@ -98,7 +102,7 @@ classdef (InferiorClasses = {?CellVariable}) CalculableStruct < dynamicprops
         end
 
         function new_obj = copy(self)
-            new_obj = CalculableStruct.from_vec(self.V, self.field_struct);
+            new_obj = CalculableStruct(self.V, self.field_struct);
         end
 
         function val = get_val(self, var_name)
@@ -108,12 +112,6 @@ classdef (InferiorClasses = {?CellVariable}) CalculableStruct < dynamicprops
     end
 
     methods (Static)
-
-        function obj = from_vec(vec, field_s)
-            obj = CalculableStruct();
-            obj.V = vec(:);
-            obj.field_struct = field_s;
-        end
 
         function val = getDynamicProp(obj,name)
           val = obj.V(obj.field_struct.(name));
