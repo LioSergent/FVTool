@@ -27,7 +27,7 @@ classdef CalculableStructTest < matlab.unittest.TestCase
     methods(Test)
 
         function test_from_vec(testCase)
-            y = CalculableStruct.from_vec(testCase.x.V, testCase.x.field_struct);
+            y = CalculableStruct(testCase.x.V, testCase.x.field_struct);
             y.equip_prop();
             testCase.verifyEqual(y.O2, testCase.x.O2);
         end
