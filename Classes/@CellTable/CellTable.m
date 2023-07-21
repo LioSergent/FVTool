@@ -10,7 +10,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
     % Automatic property association, but it is expensive ! 
 
     properties
-        A  % inner array
+        fA  % inner array
         field_struct  % ordered list
         domain % mesh of the CellVariables
     end
@@ -21,7 +21,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         nx
         nf
         T
-        fA
+        A
         iA
         fT
         left
@@ -29,11 +29,15 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
     end
 
     methods
-        function ct = CellTable(domain, A, field_struct)
+        function ct = CellTable(domain, array, field_struct, from_A)
             % Assumes first and last elements in 3rd dim are ghost cells
             ct.domain = domain;
-            ct.A = A;
             ct.field_struct = field_struct;
+            if nargin > 3 && from_A
+                ct.A = array;
+            else
+                ct.fA = array;
+            end
         end
 
         function add_prop(self, name)
@@ -53,19 +57,19 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function add_field(self, name, cell_variable)
-            old_arr = self.A;
+            old_arr = self.fA;
             old_field_struct = self.field_struct;
             new_fields = sort([self.fields; name]);
             self.field_struct = struct();
             Nxs = self.domain.dims(1) + 2;
-            self.A = zeros(1, numel(new_fields), Nxs); 
+            self.fA = zeros(1, numel(new_fields), Nxs); 
             for idx = 1:numel(new_fields)
                 field = new_fields(idx);
                 self.field_struct.(field) = idx;
                 if field == name
-                    self.A(1, idx, :) = reshape(cell_variable.value, [1 1 Nxs]); 
+                    self.fA(1, idx, :) = reshape(cell_variable.fval, [1 1 Nxs]); 
                 else
-                    self.A(1, idx, :) = old_arr(1, old_field_struct.(field), :);
+                    self.fA(1, idx, :) = old_arr(1, old_field_struct.(field), :);
                 end
             end
         end
@@ -93,31 +97,27 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function cs = get.left(self)
-            cs = CalculableStruct(reshape(self.A(1,:,1)/2 + self.A(1,:,2)/2, [self.nf 1]),...
-                self.field_struct);
+            cs = CalculableStruct(reshape(self.fA(1,:,1), [self.nf 1]), self.field_struct);
         end
 
         function cs = first_cell(self)
-            cs = CalculableStruct(reshape(self.A(1,:,2), [self.nf 1]),...
-                self.field_struct);
+            cs = CalculableStruct(reshape(self.fA(1,:,2), [self.nf 1]), self.field_struct);
         end
 
         function cs = get.right(self)
-            cs = CalculableStruct(...
-                reshape(self.A(1,:,end)/2 + self.A(1,:,end-1)/2, [self.nf, 1]), self.field_struct);
+            cs = CalculableStruct(reshape(self.fA(1,:,end), [self.nf 1]), self.field_struct);
         end
 
         function cs = last_cell(self)
-            cs = CalculableStruct(reshape(self.A(1,:,end-1), [self.nf 1]),...
-                self.field_struct);
+            cs = CalculableStruct(reshape(self.fA(1,:,end-1), [self.nf 1]), self.field_struct);
         end
 
         function set.left(self, cs)
-            self.A(1,:,1) = 2 * cs.V' - self.A(1,:,2);
+            self.fA(1,:,1) = cs.V';
         end
 
         function set.right(self, cs)
-            self.A(1,:,end) = 2 * cs.V' - self.A(1,:,end-1);
+            self.fA(1,:,end) = cs.V';
         end
 
         function new_struct = ival_struct(self)
@@ -148,8 +148,8 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
         function res = sum(self)
             % Does horizontal sum
-            v = reshape(sum(self.A, 2), [self.domain.dims(1)+2 1]);
-            res = CellVariable(self.domain, v);
+            v = reshape(sum(self.fA, 2), [self.domain.dims(1)+2 1]);
+            res = CellVariable(self.domain, v, true);
         end
 
         function res = cell_sum(self)
@@ -165,26 +165,26 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
 
         function cv = get_cv(self, name)
-            vec = reshape(self.A(1, self.field_struct.(name), :), [self.nxs 1]);
-            cv = CellVariable(self.domain, vec);
+            vec = reshape(self.fA(1, self.field_struct.(name), :), [self.nxs 1]);
+            cv = CellVariable(self.domain, vec, true);
         end
 
         function patch_cv(self, name, cv)
-            self.A(1, self.field_struct.(name), :) = reshape(cv.value, [1 1 self.nxs]);
+            self.fA(1, self.field_struct.(name), :) = reshape(cv.fval, [1 1 self.nxs]);
         end
 
-        function patch_vec(self, name, vec)
-            % Patches the values for one specific attribute
-            self.A(1, self.field_struct.(name), :) = reshape(vec, [1 1 self.nxs]);
-        end
+        % function patch_vec(self, name, vec)
+        %     % Patches the values for one specific attribute
+        %     self.A(1, self.field_struct.(name), :) = reshape(vec, [1 1 self.nxs]);
+        % end
 
         function patch_ivec(self, name, vec)
             % Patches the values for one specific attribute
-            self.A(1, self.field_struct.(name), 2:end-1) = reshape(vec, [1 1 self.nx]);
+            self.fA(1, self.field_struct.(name), 2:end-1) = reshape(vec, [1 1 self.nx]);
         end
 
         function patch_ct(self, ct)
-            self.A = ct.A;
+            self.fA = ct.fA;
         end
 
         function n = get.nxs(self)
@@ -205,30 +205,26 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
 
         function col = to_col_by_var(self)
             % Flattens into one long column, only the inner values
-            ivalA = permute(self.A(:,:, 2:end-1), [3 2 1]);
+            ivalA = permute(self.fA(:,:, 2:end-1), [3 2 1]);
             col = reshape(ivalA, [self.nx * self.nf 1]);
         end
 
-        function newA = get.fA(self)
-            % returns a multidimensional array with the inner values and the values at the
-            % boundaries
-            B = zeros(size(self.A));
-            B(:,:,2:end-1) = self.A(:,:,2:end-1);
-            B(:,:,1) = self.A(:,:,2);
-            B(:,:,end) = self.A(:,:,end-1);
-            newA = (self.A + B)/2;
+        function B = get.A(self)
+            B = self.fA;
+            B(:,:,1) = 2 * self.fA(:,:,1) - self.fA(:,:,2);
+            B(:,:,end) = 2 * self.fA(:,:,end) - self.fA(:,:,end-1);
         end
 
         function newA = get.iA(self)
             % returns a multidimensional array with just the inner values             
-            newA = self.A(:,:,2:end-1);
+            newA = self.fA(:,:,2:end-1);
         end
 
-        function set.fA(self, arr)
-            self.A = arr;
+        function set.A(self, arr)
+            self.fA = arr;
             % The column has the left and right values, we need the ghost cells values here
-            self.A(:,:,1) = 2*arr(:,:,1) - arr(:,:,2);
-            self.A(:,:,end) = 2*arr(:,:,end) - arr(:,:,end-1);
+            self.fA(:,:,1) = (arr(:,:,1) + arr(:,:,2))/2;
+            self.fA(:,:,end) = (arr(:,:,end) + arr(:,:,end-1)) / 2;
         end
 
         function col = to_col_by_cell(self)
@@ -260,31 +256,24 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
                 A(1, idx, :) = reshape(inner_table.(field).value, [1 1 Nxs]); 
             end
 
-            ct = CellTable(domain, A, field_struct);
+            ct = CellTable.from_array(domain, A, field_struct);
 
         end
         function ct = from_array(domain, arr, field_struct)
             % For backwards compatibility
-            ct = CellTable(domain, arr, field_struct);
-            if isscalar(arr)
-                ct.A = arr * ones([1 numel(fieldnames(field_struct)) domain.dims(1) + 2]);
-            end
+            ct = CellTable(domain, arr, field_struct, true);
         end
 
         function ct = from_farray(domain, arr, field_struct)
             % Assumes first and last elements in 3rd dimension are boundary values
-            A = arr;
-            % The column has the left and right values, we need the ghost cells values here
-            A(:,:,1) = 2*arr(:,:,1) - arr(:,:,2);
-            A(:,:,end) = 2*arr(:,:,end) - arr(:,:,end-1);
-            ct = CellTable.from_array(domain, A, field_struct);
+            ct = CellTable(domain, arr, field_struct);
         end
 
         function ct = from_col_by_cell(domain, col, field_struct)
             nv = numel(fieldnames(field_struct));
             nxs = numel(col) / nv;
             A_fval = reshape(col', [1 nv nxs]);
-            ct = CellTable.from_farray(domain, A_fval, field_struct);
+            ct = CellTable(domain, A_fval, field_struct, true);
         end
 
         function f = safe_fields(p)
@@ -322,11 +311,11 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         function ct = from_calculable_struct(domain, cs)
             nv = numel(cs.fields);
             nxs = domain.dims(1) + 2;
-            A = ones(1, nv, nxs);
+            fA = ones(1, nv, nxs);
             for idx = 1:numel(cs.fields) 
-                A(1, idx, :) = cs.V(idx);
+                fA(1, idx, :) = cs.V(idx);
             end
-            ct = CellTable(domain, A, cs.field_struct);
+            ct = CellTable(domain, fA, cs.field_struct);
 
         end
 

@@ -16,10 +16,12 @@ classdef CellVariable
     end
 
     methods
-        function cv = CellVariable(meshVar, cellval)
-            if nargin>0
-                cv.domain = meshVar;
+        function cv = CellVariable(meshVar, cellval, is_fval)
+            cv.domain = meshVar;
+            if nargin<3
                 cv.value = cellval; % does not do any dim check!
+            elseif is_fval 
+                cv.fval = cellval;
             end
         end
 
@@ -77,9 +79,7 @@ classdef CellVariable
 
     methods (Static)
         function cv = fromFval(domain, fval)
-            left_ghost = 2 * fval(1) - fval(2); 
-            right_ghost = 2 * fval(end) - fval(end-1);
-            cv = CellVariable(domain, [left_ghost; fval(2:end-1); right_ghost]);
+            cv = CellVariable(domain, fval, true);
         end
     end
 

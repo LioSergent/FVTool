@@ -1,31 +1,19 @@
 function r = rdivide(p,q)
-    if isa(p, 'CellTable')&&isa(q, 'CellTable')
-        r = CellTable.from_array(p.domain, p.A ./ q.A, p.field_struct);
-        r.left = p.left ./ q.left;
-        r.right = p.right ./ q.right;
-    elseif isa(p, 'CellTable')&&isa(q, 'CellVariable')
-        r = CellTable.from_array(p.domain, p.A ./ reshape(q.value, [1 1 p.domain.dims(1)+2]), ...
-        p.field_struct);
-        r.left = p.left ./ q.left;
-        r.right = p.right ./ q.right;
-    elseif isa(p, 'CellVariable')&&isa(q, 'CellTable')
-        r = CellTable.from_array(q.domain, q.A ./ reshape(p.value, [1 1 q.domain.dims(1)+2]), ...
-        q.field_struct);
-        r.left = p.left ./ q.left;
-        r.right = p.right ./ q.right;
-    elseif isa(p, 'CellTable') && isa(q, 'CalculableStruct')
-        arr_from_v = repmat(reshape(q.V, [1 numel(q.fields)]), [1 1 p.domain.dims(1)+2]);
-        r = CellTable.from_array(p.domain, p.A ./ arr_from_v, p.field_struct);
-        r.left = p.left ./ q;
-        r.right = p.right ./ q;
-    elseif isa(p, 'CalculableStruct') && isa(q, 'CellTable')
-        arr_from_v = repmat(reshape(p.V, [1 numel(p.fields)]), [1 1 q.domain.dims(1)+2]);
-        r = CellTable.from_array(q.domain, arr_from_v ./ q.A, p.field_struct);
-        r.left = p ./ q.left;
-        r.right = p ./ q.left;
-    elseif isa(p, 'CellTable')
-        r = CellTable.from_farray(p.domain, p.fA ./ q, p.field_struct);
-    else
-        r = CellTable.from_farray(q.domain, p ./ q.fA, q.field_struct);
+    stc = [class(p), '-', class(q)];
+    switch stc 
+        case 'CellTable-CellTable'
+            r = CellTable(p.domain, p.fA ./ q.fA, p.field_struct);
+        case 'CellTable-CellVariable'
+            r = CellTable(p.domain, p.fA ./ permute(q.fval, [3 2 1]), p.field_struct);
+        case 'CellVariable-CellTable'
+            r = CellTable.from_array(q.domain, q.fA ./ permute(p.fval, [3 2 1], q.field_struct));
+        case 'CellTable-CalculableStruct'
+            r = CellTable(p.domain, p.fA ./ q.V', p.field_struct);
+        case 'CalculableStruct-CellTable'
+            r = CellTable(q.domain, p.V' ./ q.fA, p.field_struct);
+        case 'CellTable-double'
+            r = CellTable(p.domain, p.fA ./ q, p.field_struct);
+        otherwise 
+            r = CellTable(q.domain, p ./ q.fA, q.field_struct);
     end
 end
