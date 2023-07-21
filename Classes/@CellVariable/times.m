@@ -21,13 +21,11 @@ function r = times(p,q)
 
 if (isa(p, 'CellVariable')&&isa(q, 'CellVariable'))
     r=p;
-    r.ival = p.ival .* q.ival;
-    r.left = p.left .* q.left;
-    r.right = p.right .* q.right;
+    r.fval = p.fval .* q.fval;
 elseif isa(p, 'CellVariable')
     r=p;
-    r.value = p.value.*q;
+    r.fval = p.fval.*q;
 else
     r=q;
-    r.value = p.*q.value;
+    r.fval = p.*q.fval;
 end

@@ -3,14 +3,16 @@ classdef CellVariable
 
     properties
         domain
-        value % Inner values + ghost cells
+        fval % cells + boundaries
     end
 
     properties (Dependent)
         ival % Inner values (just the cells)
-        fval % Inner values + left and right
+        value % Inner values + ghost cells
         left
         right
+        ghost_left
+        ghost_right
     end
 
     methods
@@ -27,34 +29,48 @@ classdef CellVariable
 
         function r = get.ival(self)
             % Inner value
-            r = self.value(2:end-1);
+            r = self.fval(2:end-1);
         end
 
         function self = set.ival(self,val)
             % Inner value
-            self.value(2:end-1) = val;
-        end
-
-        function r = get.fval(self)
-            r = [self.left; self.ival; self.right];
+            self.fval(2:end-1) = val;
         end
 
         function r = get.left(self)
             % Value at left boundary
-            r = (self.value(1) + self.value(2))/2;
+            r = self.fval(1);
         end
 
         function r = get.right(self)
             % Value at left boundary
-            r = (self.value(end) + self.value(end-1))/2;
+            r = self.fval(end);
+        end
+
+        function r = get.ghost_left(self)
+            r = 2 * self.fval(1) - self.fval(2);
+        end
+
+        function r = get.ghost_right(self)
+            r = 2 * self.fval(end) - self.fval(end-1);
+        end
+
+        function r = get.value(self)
+            r = [self.ghost_left; self.ival; self.ghost_right];
+        end
+
+        function self = set.value(self, val)
+            lb = (val(1) + val(2))/2;
+            rb = (val(end-1) + val(end))/2;
+            self.fval = [lb; val(2:end-1); rb];
         end
 
         function self = set.left(self, val)
-            self.value(1) = 2*val - self.value(2);
+            self.fval(1) = val;
         end
 
         function self = set.right(self, val)
-            self.value(end) = 2*val - self.value(end-1);
+            self.fval(end) = val;
         end
 
     end

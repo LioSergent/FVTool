@@ -20,4 +20,4 @@ function r = uminus(p)
 % See the license file
 
 r=p;
-r.value = -p.value;
+r.fval = -p.fval;

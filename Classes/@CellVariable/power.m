@@ -1,5 +1,5 @@
 function r = power(p,q)
-%power this function power (.^) the x, y, and z values of the structures that I use in
+%power this function power (.^) the x, y, and z fvals of the structures that I use in
 % the FVtool.
 %
 % SYNOPSIS:
@@ -21,17 +21,11 @@ function r = power(p,q)
 
 if (isa(p, 'CellVariable')&&isa(q, 'CellVariable'))
     r=p;
-    r.ival = p.ival.^q.ival;
-    r.left = p.left.^q.left;
-    r.right = p.right.^q.right;
+    r.fval = p.fval.^q.fval;
 elseif isa(p, 'CellVariable')
     r=p;
-    r.value = p.value.^q;
-    r.left = p.left^q;
-    r.right = p.right^q;
+    r.fval = p.fval.^q;
 else
     r=q;
-    r.value = p.^q.value;
-    r.left = p.^q.left;
-    r.right = p.^q.right;
+    r.fval = p.^q.fval;
 end

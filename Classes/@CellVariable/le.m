@@ -1,5 +1,5 @@
 function r = le(p,q)
-% this function compares the less than or equal to condition of x, y, and z values of the structures that I use in
+% this function compares the less than or equal to condition of x, y, and z fvals of the structures that I use in
 % the FVtool.
 %
 % SYNOPSIS:
@@ -21,11 +21,11 @@ function r = le(p,q)
 
 if (isa(p, 'CellVariable')&&isa(q, 'CellVariable'))
     r=p;
-    r.value = p.value<=q.value;
+    r.fval = p.fval<=q.fval;
 elseif isa(p, 'CellVariable')
     r=p;
-    r.value = p.value<=q;
+    r.fval = p.fval<=q;
 else
     r=q;
-    r.value = p<=q.value;
+    r.fval = p<=q.fval;
 end

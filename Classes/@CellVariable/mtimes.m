@@ -24,8 +24,8 @@ if (isa(p, 'CellVariable')&&isa(q, 'CellVariable'))
     error('FVMtool: Wrong use of mtimes for a cell variable. Try using .* instead.');
 elseif isa(p, 'CellVariable')
     r=p;
-    r.value = p.value*q;
+    r.fval = p.fval*q;
 else
     r=q;
-    r.value = p*q.value;
+    r.fval = p*q.fval;
 end

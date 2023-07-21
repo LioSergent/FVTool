@@ -1,5 +1,5 @@
 function r = not(p)
-%UMINUS: this function applies a unary minus to the x, y, and z values of the structures that I use in
+%UMINUS: this function applies a unary minus to the x, y, and z fvals of the structures that I use in
 % the FVtool.
 %
 % SYNOPSIS:
@@ -20,4 +20,4 @@ function r = not(p)
 % See the license file
 
 r=p;
-r.value = ~p.value;
+r.fval = ~p.fval;

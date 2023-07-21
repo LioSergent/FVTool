@@ -20,6 +20,4 @@ function r = atan(p)
 % See the license file
 
 r = p;
-r.ival = atan(p.ival);
-r.left = atan(p.left);
-r.right = atan(p.right);
+r.fval = atan(p.fval);
