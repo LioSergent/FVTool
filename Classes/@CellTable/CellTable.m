@@ -29,14 +29,14 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
     end
 
     methods
-        function ct = CellTable(domain, array, field_struct, from_A)
+        function ct = CellTable(domain, array, field_struct, from_fA)
             % Assumes first and last elements in 3rd dim are ghost cells
             ct.domain = domain;
             ct.field_struct = field_struct;
-            if nargin > 3 && from_A
-                ct.A = array;
-            else
+            if nargin > 3 && from_fA
                 ct.fA = array;
+            else
+                ct.A = array;
             end
         end
 
@@ -261,15 +261,17 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         end
         function ct = from_array(domain, arr, field_struct)
             % For backwards compatibility
-            ct = CellTable(domain, arr, field_struct, true);
+            ct = CellTable(domain, arr, field_struct);
         end
 
         function ct = from_farray(domain, arr, field_struct)
             % Assumes first and last elements in 3rd dimension are boundary values
-            ct = CellTable(domain, arr, field_struct);
+            ct = CellTable(domain, arr, field_struct, true);
         end
 
         function ct = from_col_by_cell(domain, col, field_struct)
+            %% For 1Dcomb. Assumes the col is made cell by cell and first/last group correspond to
+            %borders and NOT ghost cells.
             nv = numel(fieldnames(field_struct));
             nxs = numel(col) / nv;
             A_fval = reshape(col', [1 nv nxs]);
@@ -315,7 +317,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
             for idx = 1:numel(cs.fields) 
                 fA(1, idx, :) = cs.V(idx);
             end
-            ct = CellTable(domain, fA, cs.field_struct);
+            ct = CellTable(domain, fA, cs.field_struct, true);
 
         end
 
