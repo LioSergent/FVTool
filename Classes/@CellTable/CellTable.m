@@ -26,6 +26,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         fT
         left
         right
+        mesh
     end
 
     methods
@@ -85,6 +86,10 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
                 field = self.fields(idx);
                 tab.(field) = reshape(self.A(1, idx, :), [self.nxs 1]);
             end
+        end
+
+        function m = get.mesh(self)
+            m = self.domain;
         end
 
         function tab = get.fT(self)
@@ -149,7 +154,7 @@ classdef (InferiorClasses = {?CellVariable, ?CalculableStruct}) CellTable < dyna
         function res = sum(self)
             % Does horizontal sum
             v = reshape(sum(self.fA, 2), [self.domain.dims(1)+2 1]);
-            res = CellVariable(self.domain, v, true);
+            res = CellVariable.fromFval(self.domain, v);
         end
 
         function res = cell_sum(self)
